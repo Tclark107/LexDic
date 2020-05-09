@@ -1,0 +1,10 @@
+This is a project organizing an array lexicographichally using a Dictionary ADT to store the organized indices in a Binary Search Tree.
+
+I have worked on this assignment for: 0 hours
+thus far.
+
+Dictionary.c and Dictionary.h
+My Dictionary ADT.
+
+Lex.c
+Organizes an array from an input file into an output file.
