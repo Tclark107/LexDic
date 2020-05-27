@@ -105,7 +105,8 @@ void freeDictionary(Dictionary* pD) {
 // Returns the number of (key,value) pairs in Dictionary D.
 int size(Dictionary D) {
    if(D==NULL) {
-      fprintf(stderr,"Dictionary Error: calling size() on NULL Dictionary reference\n");
+      fprintf(stderr,
+      "Dictionary Error: calling size() on NULL Dictionary reference\n");
       exit(EXIT_FAILURE);
    }
    return D->numPairs;
@@ -116,7 +117,8 @@ int size(Dictionary D) {
 // false (0) if D accepts distinct pairs with identical keys.
 int getUnique(Dictionary D) {
    if(D==NULL) {
-      fprintf(stderr,"Dictionary Error: calling size() on NULL Dictionary reference\n");
+      fprintf(stderr,
+      "Dictionary Error: calling size() on NULL Dictionary reference\n");
       exit(EXIT_FAILURE);
    }
 
@@ -134,12 +136,57 @@ int getUnique(Dictionary D) {
 // returns VAL_UNDEF.
 VAL_TYPE lookup(Dictionary D, KEY_TYPE k) {
    if(D==NULL) {
-      fprintf(stderr,"Dictionary Error: calling size() on NULL Dictionary reference\n");
+      fprintf(stderr,
+      "Dictionary Error: calling size() on NULL Dictionary reference\n");
       exit(EXIT_FAILURE);
    }
    Node N;
    N = findKey(D->root,k);
    return(N==NULL ? VAL_UNDEF : N->value);
+}
+
+// Manipulation procedures ----------------------------------------------------
+
+// insert()
+// Insert the pair (k,v) into Dictionary D. 
+// If getUnique(D) is false (0), then there are no preconditions.
+// If getUnique(D) is true (1), then the precondition lookup(D, k)==VAL_UNDEF
+// is enforced. 
+void insert(Dictionary D, KEY_TYPE k, VAL_TYPE v) {
+   if(D==NULL) {
+      fprintf(stderr,
+      "Dictionary Error: calling insert() on NULL Dictionary reference\n");
+      exit(EXIT_FAILURE);
+   }
+   if(D->isUnique==1) { // if unique then check for repeat keys
+      if(findKey(D->root, k)!=KEY_UNDEF) {
+         fprintf(stderr, 
+         "Dictionary Error: cannot insert() duplicate key: \"%s\"\n",k);
+         exit(EXIT_FAILURE);
+      }
+   } // otherwise just insert
+   Node N,A,B;
+   N = NewNode(k,v);
+   B = KEY_UNDEF;
+   A = D->root;
+   while(A!=KEY_UNDEF){
+      B = A;
+      if(KEY_CMP(k,A->key)<0) {
+         A = A->left;
+      }else {
+         A = A->right;
+      }
+   }
+   if(B==KEY_UNDEF) {
+      D->root = N;
+   }else if(KEY_CMP(k,B->key)<0) {
+      B->left = N;
+      N->prev = B;
+   }else {
+      B->right = N;
+      N->prev = B;
+   }
+   D->numPairs++;
 }
 
 // makeEmpty();
@@ -148,4 +195,32 @@ void makeEmpty(Dictionary D) {
    deleteAll(D->root);
    D->root = NULL;
    D->numPairs = 0;
+}
+
+// Other operations -----------------------------------------------------------
+
+// inOrder
+// Recursive helper function that prints a tree in order by strcmp
+void inOrder(FILE* out,Node N){
+   //while(N!=KEY_UNDEF) {
+   if(N!=NULL) {
+      inOrder(out,N->left);
+      fprintf(out,"%s %d\n",N->key,N->value);
+      inOrder(out,N->right);
+   }
+}
+
+// printDictionary()
+// Prints a text representation of D to the file pointed to by out. Each key-
+// value pair is printed on a single line, with the two items separated by a
+// single space.  The pairs are printed in the order defined by the operator
+// KEY_CMP().
+void printDictionary(FILE* out, Dictionary D) {
+   if(D==NULL) {
+      fprintf(stderr, 
+      "Dictionary Error: calling printDictionary() on NULL Dictionary "\
+      "reference\n");
+      exit(EXIT_FAILURE);
+   }
+   inOrder(out,D->root);   
 }
